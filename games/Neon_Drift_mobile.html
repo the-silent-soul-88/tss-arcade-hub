@@ -60,7 +60,7 @@ input[type=range]{flex:1;accent-color:var(--mg)}
 <div id="garage" class="u"></div>
 <div id="ar" class="u"><span>Aim at a flat surface and tap to place the car.</span><label>Size <input id="as" type="range" min=".02" max=".2" step=".005" value=".06"></label><label>Turn <input id="at" type="range" min="0" max="6.28" step=".05" value="0"></label><div><button id="ap">Move car</button><button id="ax">Exit AR</button></div></div>
 <div id="start" class="u"><h1>Neon Drift</h1><p>Slide through a rain-slick neon grid. Long drifts fill your nitro, amber pads fire a burst, and AR mode puts your RC car on a real table.</p><div><button id="s1">Start driving</button><button id="s2">Open garage</button></div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
 <script>
 const $=s=>document.querySelector(s),T=THREE,R=Math.random,PI=Math.PI,D=PI/180,cl=(v,a,b)=>v<a?a:v>b?b:v,lp=(a,b,t)=>a+(b-a)*t;
 const H=(x,z,s)=>{const n=Math.sin(x*12.9898+z*78.233+s*37.7)*43758.5453;return n-Math.floor(n)};
