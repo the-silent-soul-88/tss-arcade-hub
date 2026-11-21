@@ -1,12 +1,12 @@
 /*
- * GAME HUB — game registry and player controller
+ * TSS GAMESPACE — game registry and player controller
  * Add your HTML games to GAME_LIST below.
  *
  * Important:
- * - Keep your game HTML and its assets together in the project.
+ * - Keep each game HTML file and its assets together in the project.
  * - Paths are relative to index.html.
- * - If a game uses its own CSS, JS, images, or audio, keep those paths working.
- * - Use a local web server (VS Code Live Server) for best results.
+ * - Keep each game's CSS, JS, images, and audio paths working.
+ * - Use VS Code Live Server (or another local web server) for best results.
  */
 
 const GAME_LIST = [
@@ -16,7 +16,7 @@ const GAME_LIST = [
     letter: "B",
     category: "Action & Survival",
     file: "games/Battle_Royale_3D_mobile.html",
-    accent: "#ff4d6d",
+    accent: "#ff5577",
     description: "3D battle royale action"
   },
   {
@@ -25,7 +25,7 @@ const GAME_LIST = [
     letter: "C",
     category: "Strategy & Board",
     file: "games/chess_mobile.html",
-    accent: "#ff2222",
+    accent: "#ff626c",
     description: "Classic strategic board game"
   },
   {
@@ -34,7 +34,7 @@ const GAME_LIST = [
     letter: "C",
     category: "Action & Endless Runner",
     file: "games/cyber_runner_3d_mobile.html",
-    accent: "#00e5ff",
+    accent: "#00dfff",
     description: "Futuristic 3D running action"
   },
   {
@@ -43,7 +43,7 @@ const GAME_LIST = [
     letter: "D",
     category: "Adventure & Arcade",
     file: "games/Dungeon_Hopper_mobile.html",
-    accent: "#b16cff",
+    accent: "#b58aff",
     description: "Dungeon-hopping arcade adventure"
   },
   {
@@ -52,7 +52,7 @@ const GAME_LIST = [
     letter: "K",
     category: "Action & Typing",
     file: "games/Katana_Type_mobile.html",
-    accent: "#ff5c8a",
+    accent: "#ff79a5",
     description: "Fast-paced typing and katana action"
   },
   {
@@ -70,7 +70,7 @@ const GAME_LIST = [
     letter: "N",
     category: "Racing & Driving",
     file: "games/Neon_Drift_mobile.html",
-    accent: "#00f5ff",
+    accent: "#00f5d4",
     description: "Neon-lit arcade drifting action"
   },
   {
@@ -79,7 +79,7 @@ const GAME_LIST = [
     letter: "P",
     category: "Brain & Puzzle",
     file: "games/puzzle.html",
-    accent: "#9d9bff",
+    accent: "#a49bff",
     description: "Solve number-based logic puzzles"
   },
   {
@@ -88,7 +88,7 @@ const GAME_LIST = [
     letter: "R",
     category: "Action",
     file: "games/runner.html",
-    accent: "#ff8a5b",
+    accent: "#ff986b",
     description: "Fast-paced arcade running challenge"
   },
   {
@@ -97,7 +97,7 @@ const GAME_LIST = [
     letter: "S",
     category: "Classic Arcade",
     file: "games/snake.html",
-    accent: "#c8ff3d",
+    accent: "#c9ff47",
     description: "Classic snake-growing arcade game"
   },
   {
@@ -110,6 +110,26 @@ const GAME_LIST = [
     description: "Solve number-placement logic puzzles"
   }
 ];
+
+// The categories below group related game labels without changing the registry.
+const FILTERS = [
+  { id: "all", label: "ALL GAMES" },
+  { id: "action", label: "ACTION" },
+  { id: "strategy", label: "STRATEGY" },
+  { id: "adventure", label: "ADVENTURE" },
+  { id: "puzzle", label: "PUZZLE" },
+  { id: "racing", label: "RACING" },
+  { id: "classic", label: "CLASSICS" }
+];
+
+const FILTER_MATCHERS = {
+  action: ["action", "survival", "runner", "typing"],
+  strategy: ["strategy", "board"],
+  adventure: ["adventure"],
+  puzzle: ["puzzle", "logic", "brain"],
+  racing: ["racing", "driving"],
+  classic: ["classic"]
+};
 
 const lobbyView = document.getElementById("lobbyView");
 const playerView = document.getElementById("playerView");
@@ -125,49 +145,180 @@ const playerLoading = document.getElementById("playerLoading");
 const playerError = document.getElementById("playerError");
 const errorBackButton = document.getElementById("errorBackButton");
 const homeBrand = document.getElementById("homeBrand");
+const filterBar = document.getElementById("filterBar");
+const clearFiltersButton = document.getElementById("clearFiltersButton");
+const randomGameButton = document.getElementById("randomGameButton");
+const browseButton = document.getElementById("browseButton");
+const totalStat = document.getElementById("totalStat");
+const genreStat = document.getElementById("genreStat");
+const currentYear = document.getElementById("currentYear");
 
 let activeGame = null;
+let activeFilter = "all";
 let loadingTimer = null;
 let frameLoadTimeout = null;
+let homeButtonTimer = null;
+let lastRandomGameId = null;
+let loadingStartedAt = 0;
 
 function padNumber(value) {
   return String(value).padStart(2, "0");
 }
 
-function renderGames(query = "") {
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredGames = GAME_LIST.filter((game) =>
-    `${game.name} ${game.category} ${game.letter}`.toLowerCase().includes(normalizedQuery)
-  );
+function getFilterForGame(game) {
+  const category = (game.category || "").toLowerCase();
+  for (const [filterId, keywords] of Object.entries(FILTER_MATCHERS)) {
+    if (keywords.some((keyword) => category.includes(keyword))) return filterId;
+  }
+  return "all";
+}
 
-  gameGrid.innerHTML = "";
+function getFilteredGames(query = searchInput.value) {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  return GAME_LIST.filter((game) => {
+    const searchableText = `${game.name} ${game.category} ${game.description} ${game.letter}`.toLowerCase();
+    const matchesSearch = !normalizedQuery || searchableText.includes(normalizedQuery);
+    const matchesFilter = activeFilter === "all" || getFilterForGame(game) === activeFilter;
+    return matchesSearch && matchesFilter;
+  });
+}
+
+function buildFilters() {
+  if (!filterBar) return;
+
+  filterBar.replaceChildren();
+  FILTERS.forEach((filter) => {
+    const count = filter.id === "all"
+      ? GAME_LIST.length
+      : GAME_LIST.filter((game) => getFilterForGame(game) === filter.id).length;
+
+    // Do not show a category chip when there are no games in that category.
+    if (filter.id !== "all" && count === 0) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `filter-chip${filter.id === activeFilter ? " active" : ""}`;
+    button.dataset.filter = filter.id;
+    button.setAttribute("aria-pressed", String(filter.id === activeFilter));
+
+    const label = document.createElement("span");
+    label.className = "filter-label";
+    label.textContent = filter.label;
+    const countLabel = document.createElement("span");
+    countLabel.textContent = padNumber(count);
+
+    button.append(label, countLabel);
+    button.addEventListener("click", () => {
+      activeFilter = filter.id;
+      buildFilters();
+      renderGames();
+    });
+    filterBar.appendChild(button);
+  });
+}
+
+function createGameCard(game, index, total) {
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "game-card";
+  card.style.setProperty("--game-accent", game.accent || "#c9ff47");
+  card.setAttribute("aria-label", `Play ${game.name}`);
+  card.dataset.gameId = game.id;
+
+  const art = document.createElement("span");
+  art.className = "card-art";
+
+  const gridLines = document.createElement("span");
+  gridLines.className = "card-grid-lines";
+  gridLines.setAttribute("aria-hidden", "true");
+
+  const indexLabel = document.createElement("span");
+  indexLabel.className = "card-index";
+  indexLabel.textContent = `${padNumber(index + 1)} / ${padNumber(total)}`;
+
+  const corner = document.createElement("span");
+  corner.className = "card-corner";
+  corner.setAttribute("aria-hidden", "true");
+  corner.textContent = "↗";
+
+  const letter = document.createElement("span");
+  letter.className = "card-letter";
+  letter.setAttribute("aria-hidden", "true");
+  letter.textContent = game.letter || game.name.charAt(0).toUpperCase();
+
+  const category = document.createElement("span");
+  category.className = "card-category";
+  category.textContent = game.category || "ARCADE GAME";
+
+  art.append(gridLines, indexLabel, corner, letter, category);
+
+  const info = document.createElement("span");
+  info.className = "card-info";
+
+  const infoMain = document.createElement("span");
+  infoMain.className = "card-info-main";
+
+  const title = document.createElement("span");
+  title.className = "card-title-text";
+  // The stylesheet targets the heading element for a semantic card title.
+  const heading = document.createElement("h3");
+  heading.textContent = game.name;
+
+  const description = document.createElement("p");
+  description.textContent = game.description || game.category || "Arcade game";
+
+  infoMain.append(heading, description);
+
+  const playArrow = document.createElement("span");
+  playArrow.className = "play-arrow";
+  playArrow.setAttribute("aria-hidden", "true");
+  playArrow.textContent = "↗";
+
+  info.append(infoMain, playArrow);
+  card.append(art, info);
+  card.addEventListener("click", () => launchGame(game));
+  return card;
+}
+
+function renderGames(query = searchInput.value) {
+  const filteredGames = getFilteredGames(query);
+  const fragment = document.createDocumentFragment();
+
   filteredGames.forEach((game, index) => {
-    const card = document.createElement("button");
-    card.type = "button";
-    card.className = "game-card";
-    card.style.setProperty("--game-accent", game.accent || "#c8ff3d");
-    card.setAttribute("aria-label", `Play ${game.name}`);
-    card.innerHTML = `
-      <div class="card-art">
-        <span class="card-index">${padNumber(index + 1)} / ${padNumber(filteredGames.length)}</span>
-        <span class="card-corner" aria-hidden="true">↗</span>
-        <span class="card-letter" aria-hidden="true"></span>
-      </div>
-      <div class="card-info">
-        <div><h3></h3><p></p></div>
-        <span class="play-arrow" aria-hidden="true">↗</span>
-      </div>
-    `;
-    card.querySelector(".card-letter").textContent = game.letter || game.name.charAt(0).toUpperCase();
-    card.querySelector("h3").textContent = game.name;
-    card.querySelector(".card-info p").textContent = game.description || game.category || "Arcade game";
-    card.addEventListener("click", () => launchGame(game));
-    gameGrid.appendChild(card);
+    fragment.appendChild(createGameCard(game, index, filteredGames.length));
   });
 
+  gameGrid.replaceChildren(fragment);
+  gameGrid.setAttribute("aria-busy", "false");
   gameCount.textContent = `${padNumber(GAME_LIST.length)} GAMES`;
   libraryCount.textContent = `/ ${padNumber(filteredGames.length)}`;
   emptyState.hidden = filteredGames.length !== 0;
+
+  if (totalStat) totalStat.textContent = padNumber(GAME_LIST.length);
+  if (genreStat) genreStat.textContent = padNumber(FILTERS.length - 1);
+}
+
+function clearFilters() {
+  activeFilter = "all";
+  searchInput.value = "";
+  buildFilters();
+  renderGames("");
+  searchInput.blur();
+}
+
+function launchRandomGame() {
+  const candidates = getFilteredGames();
+  if (candidates.length === 0) return;
+
+  let options = candidates;
+  if (candidates.length > 1 && lastRandomGameId) {
+    options = candidates.filter((game) => game.id !== lastRandomGameId);
+  }
+
+  const selectedGame = options[Math.floor(Math.random() * options.length)];
+  lastRandomGameId = selectedGame.id;
+  launchGame(selectedGame);
 }
 
 function launchGame(game) {
@@ -180,39 +331,42 @@ function launchGame(game) {
   lobbyView.hidden = true;
   playerView.hidden = false;
   document.body.classList.add("player-active");
-  document.title = `${game.name} — GAME HUB`;
+  document.title = `${game.name} — TSS GAMES`;
+  loadingStartedAt = Date.now();
 
   // Clear the previous document before loading the selected game.
   gameFrame.onload = () => {
-    playerLoading.hidden = true;
-    playerError.hidden = true;
     clearTimeout(frameLoadTimeout);
+    const elapsed = Date.now() - loadingStartedAt;
+    const remaining = Math.max(0, 350 - elapsed);
+    clearTimeout(loadingTimer);
+    loadingTimer = setTimeout(() => {
+      playerLoading.hidden = true;
+      playerError.hidden = true;
+    }, remaining);
   };
-  gameFrame.onerror = () => showLoadError();
+
+  gameFrame.onerror = showLoadError;
   gameFrame.src = game.file;
 
-  // Browser iframes do not consistently fire onerror for missing local files,
-  // so show a fallback if loading takes too long.
+  // Some browsers do not fire iframe onerror for a missing local HTML file.
+  // This timeout is a fallback for cases where the frame never finishes loading.
   clearTimeout(frameLoadTimeout);
   frameLoadTimeout = setTimeout(() => {
     if (!playerLoading.hidden) showLoadError();
-  }, 12000);
-
-  // Give the loading overlay a short minimum display time to avoid flicker.
-  clearTimeout(loadingTimer);
-  loadingTimer = setTimeout(() => {
-    if (playerView.hidden) playerLoading.hidden = true;
-  }, 450);
+  }, 15000);
 }
 
 function showLoadError() {
+  clearTimeout(loadingTimer);
+  clearTimeout(frameLoadTimeout);
   playerLoading.hidden = true;
   playerError.hidden = false;
 }
 
 function returnToLobby() {
   if (playerView.hidden) return;
-  const previousGameName = activeGame?.name || "";
+  const previousGameId = activeGame?.id || "";
 
   hideHomeButton();
   clearTimeout(loadingTimer);
@@ -220,32 +374,26 @@ function returnToLobby() {
   gameFrame.onload = null;
   gameFrame.onerror = null;
 
-  // Stop audio/animation/scripts inside the game by unloading its document.
+  // Unloading the iframe stops the game's page, audio, and scripts.
   gameFrame.src = "about:blank";
   playerView.hidden = true;
   lobbyView.hidden = false;
   playerLoading.hidden = true;
   playerError.hidden = true;
   document.body.classList.remove("player-active");
-  document.title = "GAME HUB — Arcade Launcher";
+  document.title = "TSS GAMES — Your Arcade, Your Rules";
   activeGame = null;
 
-  // Keep the current search and return keyboard focus to the selected tile if possible.
-  const searchValue = searchInput.value;
-  renderGames(searchValue);
-  const focusCard = [...gameGrid.querySelectorAll(".game-card")].find((card) =>
-    card.getAttribute("aria-label") === "Play " + previousGameName
-  );
+  // Preserve the active search/filter and return keyboard focus to the game tile.
+  renderGames();
+  const focusCard = [...gameGrid.querySelectorAll(".game-card")].find((card) => card.dataset.gameId === previousGameId);
   if (focusCard) focusCard.focus();
 }
-
-let homeButtonTimer = null;
 
 function showHomeButton() {
   homeButton.hidden = false;
   clearTimeout(homeButtonTimer);
-  // Hide again after a few seconds if the player doesn't use it.
-  homeButtonTimer = setTimeout(hideHomeButton, 4000);
+  homeButtonTimer = setTimeout(hideHomeButton, 5000);
 }
 
 function hideHomeButton() {
@@ -253,11 +401,12 @@ function hideHomeButton() {
   homeButton.hidden = true;
 }
 
-// Tap (or click / Enter / Space) on the top-left corner reveals the Home button.
+// Tap/click or use Enter/Space on the curved corner to reveal the return button.
 exitHandle.addEventListener("click", (event) => {
   event.preventDefault();
   showHomeButton();
 });
+
 exitHandle.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" && event.key !== " ") return;
   event.preventDefault();
@@ -265,7 +414,6 @@ exitHandle.addEventListener("keydown", (event) => {
   homeButton.focus();
 });
 
-// Pressing the revealed button goes back to the lobby.
 homeButton.addEventListener("click", () => {
   hideHomeButton();
   returnToLobby();
@@ -274,28 +422,57 @@ homeButton.addEventListener("click", () => {
 errorBackButton.addEventListener("click", returnToLobby);
 homeBrand.addEventListener("click", (event) => {
   event.preventDefault();
-  if (!playerView.hidden) returnToLobby();
-  else window.scrollTo({ top: 0, behavior: "smooth" });
+  if (!playerView.hidden) {
+    returnToLobby();
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 });
 
 searchInput.addEventListener("input", () => renderGames(searchInput.value));
+clearFiltersButton.addEventListener("click", clearFilters);
+randomGameButton.addEventListener("click", launchRandomGame);
+browseButton.addEventListener("click", () => {
+  // The anchor performs the scroll; this keeps the library navigation state simple.
+  document.querySelectorAll(".top-nav-link").forEach((link) => link.classList.remove("active"));
+  document.querySelector('.top-nav-link[href="#library"]')?.classList.add("active");
+});
+
+document.querySelector('.top-nav-link[href="#library"]')?.addEventListener("click", () => {
+  document.querySelectorAll(".top-nav-link").forEach((link) => link.classList.remove("active"));
+  document.querySelector('.top-nav-link[href="#library"]')?.classList.add("active");
+});
+
+document.querySelector('.top-nav-link[href="#aboutArcade"]')?.addEventListener("click", () => {
+  document.querySelectorAll(".top-nav-link").forEach((link) => link.classList.remove("active"));
+  document.querySelector('.top-nav-link[href="#aboutArcade"]')?.classList.add("active");
+});
+
 document.addEventListener("keydown", (event) => {
   if (!playerView.hidden) {
     if (event.key === "Escape") {
-      // Escape intentionally does not exit; use the transparent handle.
+      // Escape intentionally does not exit the game. Use the corner handle instead.
       event.preventDefault();
     }
     return;
   }
-  if (event.key === "/" && document.activeElement !== searchInput) {
+
+  const isTyping = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
+  if (event.key === "/" && !isTyping && !event.ctrlKey && !event.metaKey && !event.altKey) {
     event.preventDefault();
     searchInput.focus();
   }
+
   if (event.key === "Escape" && document.activeElement === searchInput) {
-    searchInput.value = "";
-    renderGames("");
-    searchInput.blur();
+    if (searchInput.value) {
+      searchInput.value = "";
+      renderGames("");
+    } else {
+      searchInput.blur();
+    }
   }
 });
 
-renderGames();
+if (currentYear) currentYear.textContent = String(new Date().getFullYear());
+buildFilters();
+renderGames("");
