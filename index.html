@@ -2,80 +2,161 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#080b12">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080a10">
+  <meta name="description" content="One hub. All your games. Enter the arcade and play.">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="application-name" content="Arcade-game-s">
-  <title>Arcade-game-s</title>
+  <meta name="application-name" content="TSS Games">
+  <title>TSS GAMES — Your Arcade, Your Rules</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#" id="homeBrand" aria-label="Game Hub home">
-        <span class="brand-mark">TSS</span>
-        <span class="brand-copy"><strong>GAME<span>S</span></strong><small>YOUR ARCADE, YOUR RULES</small></span>
+      <a class="brand" href="#top" id="homeBrand" aria-label="TSS Games home">
+        <span class="brand-mark" aria-hidden="true"><span>TSS</span></span>
+        <span class="brand-copy">
+          <strong>GAME<span>SPACE</span></strong>
+          <small>YOUR ARCADE, YOUR RULES</small>
+        </span>
       </a>
-      <!-- games count -->
+
+      <nav class="top-nav" aria-label="Main navigation">
+        <a class="top-nav-link active" href="#library">LIBRARY</a>
+        <a class="top-nav-link" href="#aboutArcade">ABOUT</a>
+      </nav>
+
       <div class="topbar-right">
-        <span class="live-dot"></span><span class="status-label">ARCADE ONLINE</span>
-        <span class="topbar-divider"></span>
-        <span id="gameCount">00 GAMES</span>
+        <span class="status-pill"><span class="live-dot"></span><span class="status-label">ARCADE ONLINE</span></span>
+        <span class="topbar-divider" aria-hidden="true"></span>
+        <span id="gameCount" class="game-count">00 GAMES</span>
       </div>
     </header>
 
     <main id="lobbyView" class="lobby-view">
-      <section class="hero">
+      <section class="hero" id="top" aria-labelledby="heroTitle">
+        <div class="hero-grid" aria-hidden="true"></div>
         <div class="hero-copy">
-          <p class="eyebrow"><span class="eyebrow-line"></span> THE ARCADE IS YOURS</p>
-          <h1>CHOOSE YOUR<br><span>NEXT GAME.</span></h1>
-          <p class="hero-description">One hub. All your games. Pick a tile and jump straight into the action.</p>
+          <p class="eyebrow"><span class="eyebrow-line"></span> PRESS PLAY. BREAK ROUTINE.</p>
+          <h1 id="heroTitle">THE NEXT<br>LEVEL IS <span>YOURS.</span></h1>
+          <p class="hero-description">Your games. One destination. Jump into a quick challenge, chase a new high score, or lose yourself in another world.</p>
+          <div class="hero-actions">
+            <a class="primary-button hero-button" href="#library" id="browseButton">
+              EXPLORE GAMES <span class="button-arrow" aria-hidden="true">↘</span>
+            </a>
+            <button class="secondary-button" id="randomGameButton" type="button">
+              <span class="shuffle-icon" aria-hidden="true">⤨</span> SURPRISE ME
+            </button>
+          </div>
+          <div class="hero-stats" aria-label="Arcade statistics">
+            <div class="hero-stat"><strong id="totalStat">11</strong><span>GAMES</span></div>
+            <span class="stat-divider" aria-hidden="true"></span>
+            <div class="hero-stat"><strong id="genreStat">06</strong><span>WAYS TO PLAY</span></div>
+            <span class="stat-divider" aria-hidden="true"></span>
+            <div class="hero-stat"><strong>∞</strong><span>REPLAY VALUE</span></div>
+          </div>
         </div>
+
         <div class="hero-art" aria-hidden="true">
-          <div class="art-ring ring-one"></div><div class="art-ring ring-two"></div>
-          <div class="art-cross">+</div><div class="art-cross cross-two">+</div>
-          <div class="art-core"><span>PLAY</span><strong>∞</strong></div>
-          <div class="art-tag">INSERT<br>COIN <span>↗</span></div>
+          <div class="art-orbit orbit-outer"></div>
+          <div class="art-orbit orbit-middle"></div>
+          <div class="art-orbit orbit-inner"></div>
+          <div class="art-cross cross-one">+</div>
+          <div class="art-cross cross-two">+</div>
+          <div class="art-diamond diamond-one"></div>
+          <div class="art-diamond diamond-two"></div>
+          <div class="art-core-wrap">
+            <div class="art-core"><span>READY?</span><strong>PLAY</strong><i>∞</i></div>
+          </div>
+          <div class="art-side-label">INSERT COIN <span>↗</span></div>
+          <div class="art-code">TSS / ARCADE SYSTEM 001</div>
+        </div>
+        <div class="hero-bottom-line"><span>01 — THE ARCADE</span><span>BUILT FOR THE LOVE OF PLAY <b>✳</b></span></div>
+      </section>
+
+      <section class="library-section" id="library" aria-labelledby="libraryTitle">
+        <div class="section-heading">
+          <div class="section-title-wrap">
+            <p class="eyebrow">PICK YOUR NEXT OBSESSION</p>
+            <h2 id="libraryTitle">GAME LIBRARY <span id="libraryCount">/ 11</span></h2>
+          </div>
+          <label class="search-box">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="searchInput" type="search" placeholder="Find your next game..." autocomplete="off" aria-label="Search games">
+            <kbd aria-hidden="true">/</kbd>
+          </label>
+        </div>
+
+        <div class="library-toolbar">
+          <div class="filter-list" id="filterBar" role="group" aria-label="Filter games by category">
+            <!-- Category filters are created by app.js. -->
+          </div>
+          <p class="library-hint"><span class="hint-dot"></span> SELECT A GAME TO START</p>
+        </div>
+
+        <div id="gameGrid" class="game-grid" aria-live="polite" aria-busy="false"></div>
+
+        <div id="emptyState" class="empty-state" hidden>
+          <div class="empty-orb" aria-hidden="true">⌕</div>
+          <p class="eyebrow">NOT IN THIS DIMENSION</p>
+          <h3>NO GAMES FOUND</h3>
+          <p>Try another search or reset your filters to see the full collection.</p>
+          <button class="secondary-button empty-reset" id="clearFiltersButton" type="button">CLEAR FILTERS <span aria-hidden="true">↗</span></button>
         </div>
       </section>
 
-      <section class="library-section">
-        <div class="section-heading">
-          <div><p class="eyebrow">YOUR COLLECTION</p><h2>GAME LIBRARY <span id="libraryCount">/ 00</span></h2></div>
-          <label class="search-box">
-            <span aria-hidden="true">⌕</span>
-            <input id="searchInput" type="search" placeholder="Find a game..." autocomplete="off" aria-label="Search games">
-            <kbd>/</kbd>
-          </label>
-        </div>
-        <div id="gameGrid" class="game-grid" aria-live="polite"></div>
-        <div id="emptyState" class="empty-state" hidden>
-          <span class="empty-icon">⌕</span><h3>NO GAMES FOUND</h3>
-          <p>Try another search, or check the game file paths in <code>app.js</code>.</p>
-        </div>
+      <section class="about-strip" id="aboutArcade" aria-label="About this arcade">
+        <div class="about-mark" aria-hidden="true">TSS<span>.</span></div>
+        <div class="about-copy"><strong>GOOD GAMES. ZERO FUSS.</strong><p>A growing collection of quick escapes, big challenges, and one-more-round moments.</p></div>
+        <div class="about-side">YOUR SESSION<br><span>STARTS HERE ↗</span></div>
       </section>
-      <footer class="lobby-footer"><span>GAME HUB <span class="footer-dot">◆</span> BUILT FOR PLAY</span><span>SELECT A GAME TO BEGIN <span class="footer-arrow">↗</span></span></footer>
+
+      <footer class="lobby-footer">
+        <span>© <span id="currentYear">2026</span> TSS GAMES <b>◆</b> BUILT FOR PLAY</span>
+        <a href="#top">BACK TO TOP <span aria-hidden="true">↑</span></a>
+      </footer>
     </main>
 
     <section id="playerView" class="player-view" hidden aria-label="Game player">
       <iframe id="gameFrame" title="Selected game" allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write" allowfullscreen></iframe>
+
+      <div class="player-topline" aria-hidden="true">
+        <span class="player-brand-mark">TSS</span>
+        <span class="player-brand-name">GAMESPACE <i>PLAYER</i></span>
+      </div>
+
       <div id="exitHandle" class="exit-handle" role="button" tabindex="0"
-           aria-label="Tap to show the home button"
-           title="Tap to show home button">
+           aria-label="Reveal the return to library button" title="Tap or click to reveal the return button">
         <span class="handle-curve"></span>
         <span class="handle-symbol" aria-hidden="true">↖</span>
       </div>
-      <button id="homeButton" class="home-button" type="button" hidden>← HOME</button>
-      <div id="playerLoading" class="player-loading" hidden><span class="loading-spinner"></span><p>LOADING GAME...</p></div>
+      <button id="homeButton" class="home-button" type="button" hidden>← BACK TO LIBRARY</button>
+
+      <div id="playerLoading" class="player-loading" hidden>
+        <div class="loading-emblem"><span></span><span></span><span></span></div>
+        <p class="loading-kicker">TSS GAMES / PLAYER</p>
+        <h2>GETTING THINGS READY</h2>
+        <p class="loading-subtitle">Your next session is almost here...</p>
+      </div>
+
       <div id="playerError" class="player-error" hidden>
-        <div class="error-mark">!</div><h2>GAME COULDN'T LOAD</h2>
-        <p>Check that the HTML file exists and that the path in <code>app.js</code> is correct.</p>
-        <button id="errorBackButton" class="primary-button">BACK TO LOBBY <span>↗</span></button>
+        <div class="error-mark">!</div>
+        <p class="eyebrow">CONNECTION INTERRUPTED</p>
+        <h2>WE COULDN'T LOAD THIS GAME.</h2>
+        <p>Check that the HTML file exists and that its path in <code>app.js</code> matches your project folder.</p>
+        <button id="errorBackButton" class="primary-button error-button" type="button">BACK TO LIBRARY <span>↗</span></button>
       </div>
     </section>
   </div>
+
   <script src="app.js"></script>
 </body>
 </html>
